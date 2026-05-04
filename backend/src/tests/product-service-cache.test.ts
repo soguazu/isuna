@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { MemoryCache } from '@/infra/cache/memory-cache.js';
 import type { Product } from '@/modules/products/repositories/product.repository.types.js';
 import type {
   CreateProductData,
@@ -47,7 +48,7 @@ describe('ProductService cache', () => {
       updateById: (id: string, data: UpdateProductData) => Promise.resolve(createProduct({ id, ...data })),
       deleteById: (id: string) => Promise.resolve({ id })
     };
-    service = new ProductService(repository);
+    service = new ProductService(repository, new MemoryCache());
   });
 
   it('caches repeated list reads for the same query', async () => {
