@@ -2,6 +2,10 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -18,7 +22,11 @@ ENV DATABASE_PATH=/app/data/database.sqlite
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && npm ci --include=dev \
+    && apt-get purge -y --auto-remove python3 make g++ \
+    && rm -rf /var/lib/apt/lists/* /root/.npm
 
 COPY --from=build /app/dist ./dist
 COPY .sequelizerc ./
