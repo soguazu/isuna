@@ -2,3 +2,4 @@ IMPLEMENTATION_TRACKER.md
 docs
 node_modules
 dist
+data/database.sqlite
