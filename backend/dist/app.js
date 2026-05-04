@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import { createContainer } from './container/create-container.js';
 import { errorMiddleware } from './common/middlewares/error.middleware.js';
 import { notFoundMiddleware } from './common/middlewares/not-found.middleware.js';
+import { createRateLimitMiddleware } from './common/middlewares/rate-limit.middleware.js';
 import { openApiSpec } from './infra/swagger/openapi.js';
 import { createV1Router } from './routes/v1/index.js';
 export const createApp = (env, overrides = {}) => {
@@ -14,6 +15,7 @@ export const createApp = (env, overrides = {}) => {
     app.use(helmet());
     app.use(cors());
     app.use(express.json());
+    app.use(createRateLimitMiddleware(env.rateLimitWindowMs, env.rateLimitMaxRequests));
     if (env.nodeEnv !== 'test') {
         app.use(morgan('dev'));
     }

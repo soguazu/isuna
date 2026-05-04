@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { seedAuthHeader } from './helpers/auth.js';
 import { asErrorBody, asSuccessBody } from './helpers/http-assertions.js';
 import { createTestApp } from './helpers/test-app.js';
 import { createTestDatabase } from './helpers/test-database.js';
@@ -15,7 +16,10 @@ describe('DELETE /api/v1/products/:id', () => {
     it('soft deletes a product by UUID', async () => {
         const app = createTestApp({ databaseContext: database });
         const product = await seedProduct();
-        const response = await request(app).delete(`/api/v1/products/${product.id}`).expect(200);
+        const response = await request(app)
+            .delete(`/api/v1/products/${product.id}`)
+            .set('Authorization', await seedAuthHeader(database, 'admin'))
+            .expect(200);
         const body = asSuccessBody(response.body);
         expect(body).toEqual({
             success: true,
@@ -32,7 +36,7 @@ describe('DELETE /api/v1/products/:id', () => {
     it('excludes deleted products from normal list and retrieve reads', async () => {
         const app = createTestApp({ databaseContext: database });
         const product = await seedProduct();
-        await request(app).delete(`/api/v1/products/${product.id}`).expect(200);
+        await request(app).delete(`/api/v1/products/${product.id}`).set('Authorization', await seedAuthHeader(database, 'admin')).expect(200);
         const listResponse = await request(app).get('/api/v1/products').expect(200);
         const retrieveResponse = await request(app).get(`/api/v1/products/${product.id}`).expect(404);
         expect(asSuccessBody(listResponse.body).data).toHaveLength(0);
@@ -40,7 +44,10 @@ describe('DELETE /api/v1/products/:id', () => {
     });
     it('returns 404 when deleting a missing product', async () => {
         const app = createTestApp({ databaseContext: database });
-        const response = await request(app).delete(`/api/v1/products/${randomUUID()}`).expect(404);
+        const response = await request(app)
+            .delete(`/api/v1/products/${randomUUID()}`)
+            .set('Authorization', await seedAuthHeader(database, 'admin'))
+            .expect(404);
         const body = asErrorBody(response.body);
         expect(body).toEqual({
             success: false,
@@ -51,13 +58,19 @@ describe('DELETE /api/v1/products/:id', () => {
         const app = createTestApp({ databaseContext: database });
         const product = await seedProduct();
         await product.destroy();
-        const response = await request(app).delete(`/api/v1/products/${product.id}`).expect(404);
+        const response = await request(app)
+            .delete(`/api/v1/products/${product.id}`)
+            .set('Authorization', await seedAuthHeader(database, 'admin'))
+            .expect(404);
         const body = asErrorBody(response.body);
         expect(body.message).toBe('Product not found');
     });
     it('rejects invalid UUID params', async () => {
         const app = createTestApp({ databaseContext: database });
-        const response = await request(app).delete('/api/v1/products/not-a-uuid').expect(422);
+        const response = await request(app)
+            .delete('/api/v1/products/not-a-uuid')
+            .set('Authorization', await seedAuthHeader(database, 'admin'))
+            .expect(422);
         const body = asErrorBody(response.body);
         expect(body.success).toBe(false);
         expect(body.message).toBe('Validation failed');

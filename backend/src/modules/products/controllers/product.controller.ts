@@ -5,7 +5,7 @@ import type { CreateProductRequest } from '@/modules/products/dtos/create-produc
 import type { ListProductsQueryDto } from '@/modules/products/dtos/list-products.dto.js';
 import type { RetrieveProductRequest } from '@/modules/products/dtos/retrieve-product.dto.js';
 import type { UpdateProductRequest } from '@/modules/products/dtos/update-product.dto.js';
-import type { Product } from '@/modules/products/entities/product.entity.js';
+import type { Product } from '@/modules/products/repositories/product.repository.types.js';
 import type { DeleteProductResult, ProductListMeta } from '@/modules/products/repositories/product.repository.types.js';
 import type { ProductService } from '@/modules/products/services/product.service.js';
 

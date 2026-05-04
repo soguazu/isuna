@@ -3,7 +3,8 @@ import { openApiSpec } from '../infra/swagger/openapi.js';
 const spec = openApiSpec;
 describe('OpenAPI contract', () => {
     it('documents all versioned API routes', () => {
-        expect(Object.keys(spec.paths ?? {}).sort()).toEqual(['/health', '/products', '/products/{id}']);
+        expect(Object.keys(spec.paths ?? {}).sort()).toEqual(['/auth/login', '/health', '/me', '/products', '/products/{id}', '/users', '/users/{id}', '/users/{id}/disable'].sort());
+        expect(Object.keys(spec.paths?.['/auth/login'] ?? {})).toEqual(['post']);
         expect(Object.keys(spec.paths?.['/health'] ?? {})).toEqual(['get']);
         expect(Object.keys(spec.paths?.['/products'] ?? {}).sort()).toEqual(['get', 'post']);
         expect(Object.keys(spec.paths?.['/products/{id}'] ?? {}).sort()).toEqual(['delete', 'get', 'patch']);
@@ -11,24 +12,44 @@ describe('OpenAPI contract', () => {
     it('defines reusable request and response schemas', () => {
         expect(Object.keys(spec.components?.schemas ?? {}).sort()).toEqual([
             'CreateProductRequest',
+            'CreateUserRequest',
             'DeleteProductSuccessResponse',
+            'AuthenticatedUser',
             'ErrorDetail',
             'ErrorResponse',
             'HealthStatus',
             'HealthSuccessResponse',
+            'LoginRequest',
+            'LoginResult',
+            'LoginSuccessResponse',
             'Product',
             'ProductListMeta',
             'ProductListSuccessResponse',
             'ProductSuccessResponse',
-            'UpdateProductRequest'
+            'UpdateProductRequest',
+            'UpdateUserRequest',
+            'User',
+            'UserListSuccessResponse',
+            'UserSuccessResponse'
         ].sort());
     });
     it('documents product operation status codes', () => {
         expect(operationResponses('/products', 'get')).toEqual(['200', '422']);
-        expect(operationResponses('/products', 'post')).toEqual(['201', '422']);
+        expect(operationResponses('/products', 'post')).toEqual(['201', '401', '403', '422']);
         expect(operationResponses('/products/{id}', 'get')).toEqual(['200', '404', '422']);
-        expect(operationResponses('/products/{id}', 'patch')).toEqual(['200', '404', '422']);
-        expect(operationResponses('/products/{id}', 'delete')).toEqual(['200', '404', '422']);
+        expect(operationResponses('/products/{id}', 'patch')).toEqual(['200', '401', '403', '404', '422']);
+        expect(operationResponses('/products/{id}', 'delete')).toEqual(['200', '401', '403', '404', '422']);
+    });
+    it('documents authentication and secured product write operations', () => {
+        expect(operationResponses('/auth/login', 'post')).toEqual(['200', '401', '422']);
+        expect(spec.components?.securitySchemes?.bearerAuth).toMatchObject({
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+        });
+        expect(JSON.stringify(spec.paths?.['/products']?.post)).toContain('bearerAuth');
+        expect(JSON.stringify(spec.paths?.['/products/{id}']?.patch)).toContain('bearerAuth');
+        expect(JSON.stringify(spec.paths?.['/products/{id}']?.delete)).toContain('bearerAuth');
     });
     it('documents product id as a reusable UUID path parameter', () => {
         const parameter = spec.components?.parameters?.ProductIdPathParameter;

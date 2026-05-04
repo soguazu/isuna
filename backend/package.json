@@ -9,6 +9,8 @@
     "lint": "eslint .",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "db:seed": "node dist/seeds/seed-super-admin.js",
+    "db:seed:dev": "tsx src/seeds/seed-super-admin.ts",
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest"

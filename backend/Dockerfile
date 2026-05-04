@@ -31,4 +31,4 @@ USER node
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npm run db:migrate && npm start"]
+CMD ["sh", "-c", "npm run db:migrate && npm run db:seed && npm start"]

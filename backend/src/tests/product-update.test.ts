@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DatabaseContext } from '@/infra/database/database-context.js';
-import type { Product } from '@/modules/products/entities/product.entity.js';
+import type { Product } from '@/modules/products/repositories/product.repository.types.js';
+import { seedAuthHeader } from './helpers/auth.js';
 import { asErrorBody, asSuccessBody } from './helpers/http-assertions.js';
 import { createTestApp } from './helpers/test-app.js';
 import { createTestDatabase } from './helpers/test-database.js';
@@ -24,6 +25,7 @@ describe('PATCH /api/v1/products/:id', () => {
 
     const response = await request(app)
       .patch(`/api/v1/products/${product.id}`)
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
       .send({
         price: 69.99
       })
@@ -48,6 +50,7 @@ describe('PATCH /api/v1/products/:id', () => {
 
     const response = await request(app)
       .patch(`/api/v1/products/${product.id}`)
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
       .send({
         name: 'Trackball Mouse',
         description: 'Ergonomic trackball with Bluetooth',
@@ -71,6 +74,7 @@ describe('PATCH /api/v1/products/:id', () => {
 
     const response = await request(app)
       .patch(`/api/v1/products/${randomUUID()}`)
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
       .send({
         name: 'Missing Product'
       })
@@ -91,6 +95,7 @@ describe('PATCH /api/v1/products/:id', () => {
 
     const response = await request(app)
       .patch(`/api/v1/products/${product.id}`)
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
       .send({
         name: 'Deleted Product'
       })
@@ -106,6 +111,7 @@ describe('PATCH /api/v1/products/:id', () => {
 
     const response = await request(app)
       .patch(`/api/v1/products/${product.id}`)
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
       .send({
         name: '',
         price: -1,
@@ -127,9 +133,14 @@ describe('PATCH /api/v1/products/:id', () => {
   it('rejects empty update payloads and invalid UUID params', async () => {
     const app = createTestApp({ databaseContext: database });
 
-    const emptyBodyResponse = await request(app).patch(`/api/v1/products/${randomUUID()}`).send({}).expect(422);
+    const emptyBodyResponse = await request(app)
+      .patch(`/api/v1/products/${randomUUID()}`)
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
+      .send({})
+      .expect(422);
     const invalidUuidResponse = await request(app)
       .patch('/api/v1/products/not-a-uuid')
+      .set('Authorization', await seedAuthHeader(database, 'manager'))
       .send({
         name: 'Valid Name'
       })
