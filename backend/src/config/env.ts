@@ -6,6 +6,13 @@ export type AppEnv = {
   nodeEnv: string;
   port: number;
   databasePath: string;
+  jwtSecret: string;
+  jwtExpiresInSeconds: number;
+  rateLimitWindowMs: number;
+  rateLimitMaxRequests: number;
+  superAdminName?: string;
+  superAdminEmail?: string;
+  superAdminPassword?: string;
 };
 
 const parsePort = (value: string | undefined): number => {
@@ -18,9 +25,39 @@ const parsePort = (value: string | undefined): number => {
   return port;
 };
 
+const parsePositiveInteger = (name: string, value: string | undefined, fallback: number): number => {
+  const parsedValue = Number(value ?? fallback);
+
+  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+
+  return parsedValue;
+};
+
+const parseJwtSecret = (nodeEnv: string): string => {
+  const jwtSecret = process.env.JWT_SECRET;
+
+  if (jwtSecret) {
+    return jwtSecret;
+  }
+
+  if (nodeEnv === 'production') {
+    throw new Error('JWT_SECRET is required in production');
+  }
+
+  return 'isuna-development-secret';
+};
+
 export const loadEnv = (): AppEnv => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parsePort(process.env.PORT),
-  databasePath: process.env.DATABASE_PATH ?? './data/database.sqlite'
+  databasePath: process.env.DATABASE_PATH ?? './data/database.sqlite',
+  jwtSecret: parseJwtSecret(process.env.NODE_ENV ?? 'development'),
+  jwtExpiresInSeconds: parsePositiveInteger('JWT_EXPIRES_IN_SECONDS', process.env.JWT_EXPIRES_IN_SECONDS, 3600),
+  rateLimitWindowMs: parsePositiveInteger('RATE_LIMIT_WINDOW_MS', process.env.RATE_LIMIT_WINDOW_MS, 60_000),
+  rateLimitMaxRequests: parsePositiveInteger('RATE_LIMIT_MAX_REQUESTS', process.env.RATE_LIMIT_MAX_REQUESTS, 100),
+  superAdminName: process.env.SUPER_ADMIN_NAME,
+  superAdminEmail: process.env.SUPER_ADMIN_EMAIL,
+  superAdminPassword: process.env.SUPER_ADMIN_PASSWORD
 });
-

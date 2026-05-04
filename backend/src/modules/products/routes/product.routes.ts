@@ -3,18 +3,19 @@ import type { ParamsDictionary } from 'express-serve-static-core';
 import { asyncHandler } from '@/common/middlewares/async-handler.middleware.js';
 import { validateRequest } from '@/common/middlewares/validation/validate-request.middleware.js';
 import type { SuccessResponse } from '@/common/types/http.js';
+import { authorizePermission } from '@/modules/auth/middlewares/authorize-permission.middleware.js';
 import type { ProductController } from '@/modules/products/controllers/product.controller.js';
 import { createProductRequestDto } from '@/modules/products/dtos/create-product.dto.js';
 import { listProductsRequestDto } from '@/modules/products/dtos/list-products.dto.js';
 import type { ListProductsQueryDto } from '@/modules/products/dtos/list-products.dto.js';
 import { retrieveProductRequestDto } from '@/modules/products/dtos/retrieve-product.dto.js';
 import { updateProductRequestDto } from '@/modules/products/dtos/update-product.dto.js';
-import type { Product } from '@/modules/products/entities/product.entity.js';
+import type { Product } from '@/modules/products/repositories/product.repository.types.js';
 import type { ProductListMeta } from '@/modules/products/repositories/product.repository.types.js';
 
 type ProductListSuccessResponse = SuccessResponse<Product[], ProductListMeta>;
 
-export const createProductRouter = (productController: ProductController): Router => {
+export const createProductRouter = (productController: ProductController, authenticate: RequestHandler): Router => {
   const router = Router();
 
   /**
@@ -137,6 +138,8 @@ export const createProductRouter = (productController: ProductController): Route
    *     summary: Update a product
    *     tags:
    *       - Products
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - $ref: '#/components/parameters/ProductIdPathParameter'
    *     requestBody:
@@ -176,6 +179,18 @@ export const createProductRouter = (productController: ProductController): Route
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
+   *       '401':
+   *         description: Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       '403':
+   *         description: Forbidden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       '422':
    *         description: Validation failed
    *         content:
@@ -183,7 +198,13 @@ export const createProductRouter = (productController: ProductController): Route
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  router.patch('/:id', validateRequest(updateProductRequestDto), asyncHandler(productController.update));
+  router.patch(
+    '/:id',
+    authenticate,
+    authorizePermission('products:update'),
+    validateRequest(updateProductRequestDto),
+    asyncHandler(productController.update)
+  );
 
   /**
    * @openapi
@@ -192,6 +213,8 @@ export const createProductRouter = (productController: ProductController): Route
    *     summary: Delete a product
    *     tags:
    *       - Products
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - $ref: '#/components/parameters/ProductIdPathParameter'
    *     responses:
@@ -213,6 +236,18 @@ export const createProductRouter = (productController: ProductController): Route
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
+   *       '401':
+   *         description: Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       '403':
+   *         description: Forbidden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       '422':
    *         description: Validation failed
    *         content:
@@ -220,7 +255,13 @@ export const createProductRouter = (productController: ProductController): Route
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  router.delete('/:id', validateRequest(retrieveProductRequestDto), asyncHandler(productController.delete));
+  router.delete(
+    '/:id',
+    authenticate,
+    authorizePermission('products:delete'),
+    validateRequest(retrieveProductRequestDto),
+    asyncHandler(productController.delete)
+  );
 
   /**
    * @openapi
@@ -229,6 +270,8 @@ export const createProductRouter = (productController: ProductController): Route
    *     summary: Create a product
    *     tags:
    *       - Products
+   *     security:
+   *       - bearerAuth: []
    *     requestBody:
    *       required: true
    *       content:
@@ -262,6 +305,18 @@ export const createProductRouter = (productController: ProductController): Route
    *                     createdAt: '2026-05-04T10:00:00.000Z'
    *                     updatedAt: '2026-05-04T10:00:00.000Z'
    *                     deletedAt: null
+   *       '401':
+   *         description: Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       '403':
+   *         description: Forbidden
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    *       '422':
    *         description: Validation failed
    *         content:
@@ -269,7 +324,13 @@ export const createProductRouter = (productController: ProductController): Route
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  router.post('/', validateRequest(createProductRequestDto), asyncHandler(productController.create));
+  router.post(
+    '/',
+    authenticate,
+    authorizePermission('products:create'),
+    validateRequest(createProductRequestDto),
+    asyncHandler(productController.create)
+  );
 
   return router;
 };

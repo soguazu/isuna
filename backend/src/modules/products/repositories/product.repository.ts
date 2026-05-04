@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 import type { WhereOptions } from 'sequelize';
-import type { Product } from '@/modules/products/entities/product.entity.js';
+import type { Product } from '@/modules/products/repositories/product.repository.types.js';
 import type { ProductModel } from '@/modules/products/models/product.model.js';
 import type {
   CreateProductData,

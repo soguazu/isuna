@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { asErrorBody, asSuccessBody } from './helpers/http-assertions.js';
+import { seedAuthHeader } from './helpers/auth.js';
 import { createTestDatabase } from './helpers/test-database.js';
 import { createTestApp } from './helpers/test-app.js';
 describe('POST /api/v1/products', () => {
@@ -15,6 +16,7 @@ describe('POST /api/v1/products', () => {
         const app = createTestApp({ databaseContext: database });
         const response = await request(app)
             .post('/api/v1/products')
+            .set('Authorization', await seedAuthHeader(database, 'manager'))
             .send({
             name: 'Wireless Mouse',
             description: 'Ergonomic mouse with USB-C charging',
@@ -40,6 +42,7 @@ describe('POST /api/v1/products', () => {
         const app = createTestApp({ databaseContext: database });
         const response = await request(app)
             .post('/api/v1/products')
+            .set('Authorization', await seedAuthHeader(database, 'manager'))
             .send({
             name: '',
             description: '',

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DatabaseContext } from '@/infra/database/database-context.js';
-import type { Product } from '@/modules/products/entities/product.entity.js';
+import type { Product } from '@/modules/products/repositories/product.repository.types.js';
 import { asErrorBody, asSuccessBody } from './helpers/http-assertions.js';
 import { createTestApp } from './helpers/test-app.js';
 import { createTestDatabase } from './helpers/test-database.js';
