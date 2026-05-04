@@ -1,4 +1,5 @@
 import { createDatabaseContext } from '../infra/database/database-context.js';
+import { RedisCache } from '../infra/cache/redis-cache.js';
 import { AuthController } from '../modules/auth/controllers/auth.controller.js';
 import { AuthService } from '../modules/auth/services/auth.service.js';
 import { JwtService } from '../modules/auth/services/jwt.service.js';
@@ -13,6 +14,7 @@ import { SequelizeUserRepository } from '../modules/users/repositories/user.repo
 import { UserService } from '../modules/users/services/user.service.js';
 export const createContainer = (env, overrides = {}) => {
     const databaseContext = overrides.databaseContext ?? createDatabaseContext(env);
+    const redisCache = overrides.redisCache ?? new RedisCache(env.redisUrl);
     const jwtService = new JwtService(env.jwtSecret, env.jwtExpiresInSeconds);
     const passwordService = new PasswordService();
     const userRepository = new SequelizeUserRepository(databaseContext.models.User);
@@ -23,7 +25,7 @@ export const createContainer = (env, overrides = {}) => {
     const healthService = new HealthService(env);
     const healthController = new HealthController(healthService);
     const productRepository = new SequelizeProductRepository(databaseContext.models.Product);
-    const productService = new ProductService(productRepository);
+    const productService = new ProductService(productRepository, redisCache);
     const productController = new ProductController(productService);
     return {
         authController,
@@ -32,6 +34,7 @@ export const createContainer = (env, overrides = {}) => {
         userController,
         healthController,
         productController,
-        databaseContext
+        databaseContext,
+        redisCache
     };
 };

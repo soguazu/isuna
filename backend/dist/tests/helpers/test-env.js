@@ -2,6 +2,7 @@ export const createTestEnv = (overrides = {}) => ({
     nodeEnv: 'test',
     port: 4000,
     databasePath: ':memory:',
+    redisUrl: 'redis://localhost:6379',
     jwtSecret: 'test-secret',
     jwtExpiresInSeconds: 3600,
     rateLimitWindowMs: 60_000,

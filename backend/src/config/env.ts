@@ -6,6 +6,7 @@ export type AppEnv = {
   nodeEnv: string;
   port: number;
   databasePath: string;
+  redisUrl: string;
   jwtSecret: string;
   jwtExpiresInSeconds: number;
   rateLimitWindowMs: number;
@@ -53,6 +54,7 @@ export const loadEnv = (): AppEnv => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parsePort(process.env.PORT),
   databasePath: process.env.DATABASE_PATH ?? './data/database.sqlite',
+  redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
   jwtSecret: parseJwtSecret(process.env.NODE_ENV ?? 'development'),
   jwtExpiresInSeconds: parsePositiveInteger('JWT_EXPIRES_IN_SECONDS', process.env.JWT_EXPIRES_IN_SECONDS, 3600),
   rateLimitWindowMs: parsePositiveInteger('RATE_LIMIT_WINDOW_MS', process.env.RATE_LIMIT_WINDOW_MS, 60_000),

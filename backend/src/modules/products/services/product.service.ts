@@ -1,4 +1,5 @@
 import { ApiError } from '@/common/errors/api-error.js';
+import type { Cache } from '@/infra/cache/cache.types.js';
 import type { CreateProductBodyDto } from '@/modules/products/dtos/create-product.dto.js';
 import type { ListProductsQueryDto } from '@/modules/products/dtos/list-products.dto.js';
 import type { UpdateProductBodyDto } from '@/modules/products/dtos/update-product.dto.js';
@@ -9,26 +10,29 @@ import type {
   ProductRepository
 } from '@/modules/products/repositories/product.repository.types.js';
 
-export class ProductService {
-  private readonly cache = new Map<string, { expiresAt: number; value: unknown }>();
-  private readonly cacheTtlMs = 30_000;
+const CACHE_TTL_MS = 30_000;
 
-  constructor(private readonly productRepository: ProductRepository) {}
+export class ProductService {
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly cache: Cache
+  ) {}
 
   async createProduct(input: CreateProductBodyDto): Promise<Product> {
     const product = await this.productRepository.create(input);
-
-    this.clearCache();
-
+    await this.cache.flush();
     return product;
   }
 
   async listProducts(query: ListProductsQueryDto): Promise<ListProductsResult> {
-    return this.getOrSetCache(`products:list:${JSON.stringify(query)}`, () => this.productRepository.list(query));
+    const key = `products:list:${JSON.stringify(query)}`;
+    return this.cached(key, () => this.productRepository.list(query));
   }
 
   async retrieveProduct(id: string): Promise<Product> {
-    const product = await this.getOrSetCache(`products:retrieve:${id}`, () => this.productRepository.findById(id));
+    const product = await this.cached(`products:retrieve:${id}`, () =>
+      this.productRepository.findById(id)
+    );
 
     if (!product) {
       throw new ApiError('Product not found', 404);
@@ -44,8 +48,7 @@ export class ProductService {
       throw new ApiError('Product not found', 404);
     }
 
-    this.clearCache();
-
+    await this.cache.flush();
     return product;
   }
 
@@ -56,29 +59,16 @@ export class ProductService {
       throw new ApiError('Product not found', 404);
     }
 
-    this.clearCache();
-
+    await this.cache.flush();
     return result;
   }
 
-  private async getOrSetCache<TValue>(key: string, loader: () => Promise<TValue>): Promise<TValue> {
-    const cachedValue = this.cache.get(key);
-
-    if (cachedValue && cachedValue.expiresAt > Date.now()) {
-      return cachedValue.value as TValue;
-    }
+  private async cached<T>(key: string, loader: () => Promise<T>): Promise<T> {
+    const raw = await this.cache.get(key);
+    if (raw !== null) return JSON.parse(raw) as T;
 
     const value = await loader();
-
-    this.cache.set(key, {
-      expiresAt: Date.now() + this.cacheTtlMs,
-      value
-    });
-
+    await this.cache.set(key, JSON.stringify(value), CACHE_TTL_MS);
     return value;
-  }
-
-  private clearCache(): void {
-    this.cache.clear();
   }
 }
