@@ -1,4 +1,10 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import swaggerJsdoc from 'swagger-jsdoc';
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const buildRoot = path.resolve(currentDir, '../..');
+const projectRoot = path.resolve(buildRoot, '..');
 
 export const openApiSpec = swaggerJsdoc({
   definition: {
@@ -732,5 +738,10 @@ export const openApiSpec = swaggerJsdoc({
       }
     }
   },
-  apis: ['src/routes/**/*.ts', 'src/modules/**/*.routes.ts']
+  apis: [
+    path.join(projectRoot, 'src/routes/**/*.ts'),
+    path.join(projectRoot, 'src/modules/**/*.routes.ts'),
+    path.join(projectRoot, 'dist/routes/**/*.js'),
+    path.join(projectRoot, 'dist/modules/**/*.routes.js')
+  ]
 });
