@@ -31,11 +31,35 @@ A full-stack product management system with role-based and attribute-based acces
 
 ## Screenshots
 
-### Application UI
+### Login
+
+![Login screen](docs/screenshots/ui-login.png)
+
+*Sign in page for the Inventra product manager.*
+
+### Users
+
+![Users list](docs/screenshots/ui-users.png)
+
+*User administration with active/disabled status, role badges, and account management actions.*
+
+### Products — Create
+
+![Product create form](docs/screenshots/ui-product-create.png)
+
+*Create a new product from the inventory dashboard.*
+
+### Products — Edit
+
+![Edit product modal](docs/screenshots/ui-product-edit.png)
+
+*Edit an existing product in a modal dialog.*
+
+### Products — List
 
 ![Product List](docs/screenshots/app-product-list.png)
 
-*Product listing page — public, no login required. Supports pagination and keyword search.*
+*Inventory list page with search, pagination, and product actions.*
 
 ### Swagger API Docs
 
