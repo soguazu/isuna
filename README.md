@@ -68,7 +68,7 @@ A full-stack product management system with role-based and attribute-based acces
 
 *Auto-generated OpenAPI docs at `http://localhost:4000/api/v1/docs/`.*
 
-![Swagger Auth](docs/screenshots/swagger-auth-login.png)
+![Swagger Auth](docs/screenshots/swagger-overview.png)
 
 *`POST /auth/login` — exchange credentials for a JWT and paste it into the Authorize dialog to test protected endpoints directly from the browser.*
 
