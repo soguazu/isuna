@@ -1,5 +1,6 @@
 IMPLEMENTATION_TRACKER.md
-docs
+docs/governance
+docs/roles
 node_modules
 dist
 data/database.sqlite
