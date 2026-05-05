@@ -33,7 +33,8 @@ A full-stack product management system with role-based and attribute-based acces
 
 ### Application UI
 
-![Product List](<img width="2547" height="1533" alt="Screenshot 2026-05-05 080610" src="https://github.com/user-attachments/assets/5a082222-4c2a-4c98-b62f-f1bc5e61e484" />)
+![Product List](<img width="2547" height="1533" alt="list" src="https://github.com/user-attachments/assets/18a25b81-6ec3-42ce-b626-a7d41375b142" />)
+
 
 *Product listing page — public, no login required. Supports pagination and keyword search.*
 
